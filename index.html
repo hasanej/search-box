@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Search Box - Hasan El Jabir</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <form class="search-form">
+            <input type="text" class="search" placeholder="Input City Name">
+                <ul class="suggestions">
+                    <li>Search for a city</li>
+                </ul>
+        </form>
+
+        <script>
+            (() => {
+                const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+
+                const cities = [],
+                    searchInput = document.querySelector('.search'),
+                    suggestions = document.querySelector('.suggestions');
+
+                fetch(endpoint)
+                    .then(blob => blob.json())
+                    .then(data => cities.push(...data))
+
+                const matchInput = (inputString, cities) => cities.filter(({city}) => (
+                    city.match(new RegExp(inputString, 'gi'))
+                ));
+
+                const numberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+                const displayMatches = (el) => {
+                    const matchArray = matchInput(el.value, cities)
+
+                    const suggestionList = matchArray.map((location => {
+                        const regex = new RegExp(el.value, 'gi');
+                        const cityName = location.city.replace(regex, `<span class="hl">${el.value}</span>`);
+                        const population = location.population.replace(regex, `<span class="hl">${el.value}</span>`);
+                        return `
+                            <li>
+                                <span class="name">${cityName}</span>
+                                <span class="population">${numberWithCommas(location.population)}</span>
+                            </li>`;
+                    })).join('');
+                    suggestions.innerHTML = suggestionList;
+                }
+
+                searchInput.addEventListener('keyup', (e) => displayMatches(searchInput));
+            })();
+        </script>
+    </body>
+</html>
